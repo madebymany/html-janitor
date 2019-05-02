@@ -39,6 +39,10 @@
     return inlineElementNames.indexOf(node.nodeName) !== -1;
   }
 
+  function isScribeMarker(node) {
+    return node.nodeName === "EM" && node.outerHTML === '<em class="scribe-marker" style=""></em>';
+  }
+
   HTMLJanitor.prototype.clean = function (html) {
     const sandbox = document.implementation.createHTMLDocument('');
     const root = sandbox.createElement("div");
@@ -115,15 +119,17 @@
         this._sanitize(document, parentNode);
         break;
       }
+      
+      if (!isScribeMarker(node)) {
+        // Sanitize attributes
+        for (var a = 0; a < node.attributes.length; a += 1) {
+          var attr = node.attributes[a];
 
-      // Sanitize attributes
-      for (var a = 0; a < node.attributes.length; a += 1) {
-        var attr = node.attributes[a];
-
-        if (shouldRejectAttr(attr, allowedAttrs, node)) {
-          node.removeAttribute(attr.name);
-          // Shift the array to continue looping.
-          a = a - 1;
+          if (shouldRejectAttr(attr, allowedAttrs, node)) {
+            node.removeAttribute(attr.name);
+            // Shift the array to continue looping.
+            a = a - 1;
+          }
         }
       }
 
